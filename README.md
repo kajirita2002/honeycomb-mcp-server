@@ -1,6 +1,6 @@
 # Honeycomb MCP Server
 
-<a href="https://glama.ai/mcp/servers/@kajirita2002/honeycomb-mcp-server">
+<a href="https://glama.ai/mcp/servers/honeycomb-mcp-server">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@kajirita2002/honeycomb-mcp-server/badge" alt="Honeycomb MCP server" />
 </a>
 
