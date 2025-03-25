@@ -1,0 +1,35 @@
+{
+  "name": "@kajirita2002/honeycomb-mcp-server",
+  "version": "1.0.1",
+  "description": "MCP server for interacting with honeycomb API",
+  "license": "MIT",
+  "author": "kajirita2002",
+  "homepage": "https://github.com/kajirita2002/honeycomb-mcp-server",
+  "bugs": "https://github.com/kajirita2002/honeycomb-mcp-server/issues",
+  "type": "module",
+  "bin": {
+    "honeycomb-mcp-server": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && shx chmod +x dist/*.js",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "shx": "^0.3.4",
+    "typescript": "^5.6.2"
+  }
+}
+
