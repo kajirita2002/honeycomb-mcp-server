@@ -300,6 +300,109 @@ Here's an example of Claude using this MCP server to create a new Honeycomb data
 
 [Claude] I'll create a new dataset for you in Honeycomb. 
 
+I'll use the honeycomb_datasets_create tool:
+
+Input:
+{
+  "name": "Application Monitoring",
+  "description": "Monitoring for our production application"
+}
+
+The dataset has been created successfully!
+
+[Claude] Now, let me add an event to this dataset. I'll create an event with some sample metrics.
+
+I'll use the honeycomb_event_create tool:
+
+Input:
+{
+  "datasetSlug": "application-monitoring",
+  "data": {
+    "service": "api-gateway",
+    "duration_ms": 45.2,
+    "status_code": 200,
+    "endpoint": "/users",
+    "method": "GET"
+  }
+}
+
+Event created successfully! You can now see this event in the Honeycomb UI under the Application Monitoring dataset.
+
+[Claude] I can also create a query to analyze this data. Let me create a query that shows the average duration by endpoint.
+
+I'll use the honeycomb_query_create tool:
+
+Input:
+{
+  "datasetSlug": "application-monitoring",
+  "query": {
+    "calculations": [
+      {
+        "op": "AVG",
+        "column": "duration_ms"
+      }
+    ],
+    "breakdowns": ["endpoint"],
+    "time_range": 3600
+  }
+}
+```
+
+### Common Integration Patterns
+
+1. **Observability Automation**
+   ```
+   [User] Claude, please help me set up a new SLO for API response times.
+   
+   [Claude] I can help with that. Let me create an SLO to track API response times.
+   
+   I'll use honeycomb_slo_create with these parameters:
+   {
+     "datasetSlug": "production-api",
+     "name": "API Response Time SLO",
+     "description": "Tracks response time for critical API endpoints",
+     "sli": {
+       "alias": "Response Time < 300ms",
+       "conditions": {
+         "column": "duration_ms",
+         "operator": "<",
+         "value": 300
+       }
+     },
+     "time_period_days": 30,
+     "target_per_million": 995000
+   }
+   ```
+
+2. **Incident Investigation**
+   ```
+   [User] We're seeing elevated error rates in production. Can you help investigate?
+   
+   [Claude] I'll help investigate the elevated error rates. Let me query the recent error data.
+   
+   First, I'll use honeycomb_query_result_create:
+   {
+     "datasetSlug": "production",
+     "query": {
+       "calculations": [
+         {
+           "op": "COUNT"
+         }
+       ],
+       "filters": [
+         {
+           "column": "status_code",
+           "operator": ">=",
+           "value": 500
+         }
+       ],
+       "breakdowns": ["service", "endpoint"],
+       "time_range": 3600,
+       "granularity": 60
+     }
+   }
+   ```
+
 Creating dataset "Application Monitoring" with the description "Monitoring for our production application"...
 
 [Claude uses honeycomb_datasets_create]
@@ -329,6 +432,86 @@ This event represents a successful user login operation that took 45ms to comple
 You can now view this event in your Honeycomb dashboard and start building queries to analyze your data.
 ```
 
+## Error Handling
+
+This MCP server returns error information in a consistent format. When an error occurs, the following structure is returned:
+
+```json
+{
+  "error": {
+    "message": "Detailed error description",
+    "code": "ERROR_CODE"
+  }
+}
+```
+
+### Common Error Codes
+
+- `AUTH_ERROR`: Authentication failed. Check your API key.
+- `NOT_FOUND`: The requested resource was not found.
+- `INVALID_PARAMETER`: One or more parameters are invalid.
+- `RATE_LIMIT`: Honeycomb API rate limit has been reached.
+- `SERVER_ERROR`: Internal server error occurred.
+
+### Troubleshooting Tips
+
+1. **Authentication Issues**
+   - Ensure your `HONEYCOMB_API_KEY` is set correctly
+   - Verify the API key has appropriate permissions
+
+2. **Dataset Not Found**
+   - Confirm that the dataset slug is correct (check for typos)
+   - Make sure the dataset exists in your Honeycomb account
+
+3. **Query Execution Issues**
+   - Validate that query parameters are formatted correctly
+   - Check column names in queries match those in your dataset
+
+## Contributing
+
+Contributions to the Honeycomb MCP server are welcome! Here's how you can contribute:
+
+### Development Setup
+
+1. Fork the repository
+2. Clone your fork
+   ```bash
+   git clone https://github.com/your-username/honeycomb-mcp-server.git
+   ```
+3. Install dependencies
+   ```bash
+   npm install
+   ```
+4. Make your changes
+5. Run the build
+   ```bash
+   npm run build
+   ```
+6. Test your changes locally
+
+### Pull Request Process
+
+1. Create a feature branch
+   ```bash
+   git checkout -b feat-your-feature-name
+   ```
+2. Commit your changes following [Conventional Commits](https://www.conventionalcommits.org/) format
+   ```bash
+   git commit -m "feat: add new feature"
+   ```
+3. Push to your fork
+   ```bash
+   git push origin feat-your-feature-name
+   ```
+4. Open a Pull Request
+
+### Coding Standards
+
+- Use TypeScript for all new code
+- Follow the existing code style
+- Add comments for public APIs
+- Write tests for new functionality
+
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
