@@ -425,7 +425,7 @@ class HoneycombClient {
   private headers: Record<string, string>;
 
   constructor(apiKey: string) {
-    this.baseUrl = "https://api.honeycomb.io/v1";
+    this.baseUrl = "https://api.honeycomb.io/1";
     this.headers = {
       "X-Honeycomb-Team": apiKey,
       "Content-Type": "application/json",
