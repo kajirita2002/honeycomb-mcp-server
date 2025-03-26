@@ -90,12 +90,7 @@ npm start
      - `name` (string, required): データセットの名前
      - `description` (string, optional): データセットの説明
 
-4. `honeycomb_datasets_update`
-   - 既存のデータセットを更新します
-   - 入力:
-     - `datasetSlug` (string, required): 更新するデータセットのスラグ
-     - `name` (string, optional): データセットの新しい名前
-     - `description` (string, optional): データセットの新しい説明
+
 
 #### カラム管理
 
@@ -128,11 +123,7 @@ npm start
      - `datasetSlug` (string, required): データセットのスラグ
      - `data` (object, required): イベントデータ
 
-2. `honeycomb_batch_event_create`
-   - データセットに複数のイベントを作成します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-     - `events` (array of objects, required): イベントデータの配列
+
 
 #### ボード管理
 
@@ -164,10 +155,7 @@ npm start
      - `description` (string, optional): ボードの新しい説明
      - `query_ids` (array of strings, optional): ボードに含める新しいクエリのID配列
 
-5. `honeycomb_board_delete`
-   - ボードを削除します
-   - 入力:
-     - `boardId` (string, required): 削除するボードの ID
+
 
 #### マーカー管理
 
@@ -177,14 +165,7 @@ npm start
    - 入力:
      - `datasetSlug` (string, required): データセットのスラグ
 
-2. `honeycomb_marker_get`
-
-   - 特定のマーカーに関する情報を取得します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-     - `markerId` (string, required): マーカーの ID
-
-3. `honeycomb_marker_create`
+2. `honeycomb_marker_create`
 
    - 新しいマーカーを作成します
    - 入力:
@@ -195,115 +176,9 @@ npm start
      - `end_time` (string, optional): マーカーの終了時間
      - `url` (string, optional): マーカーに関連付けられた URL
 
-4. `honeycomb_marker_update`
 
-   - 既存のマーカーを更新します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-     - `markerId` (string, required): 更新するマーカーの ID
-     - `message` (string, optional): マーカーの新しいメッセージ
-     - `type` (string, optional): マーカーの新しいタイプ
-     - `start_time` (string, optional): マーカーの新しい開始時間
-     - `end_time` (string, optional): マーカーの新しい終了時間
-     - `url` (string, optional): マーカーに関連付けられた新しい URL
 
-5. `honeycomb_marker_delete`
-   - マーカーを削除します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-     - `markerId` (string, required): 削除するマーカーの ID
 
-#### SLO 管理
-
-1. `honeycomb_slos_list`
-
-   - データセットのすべての SLO をリスト表示します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-
-2. `honeycomb_slo_get`
-
-   - 特定の SLO に関する情報を取得します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-     - `sloId` (string, required): SLO の ID
-
-3. `honeycomb_slo_create`
-
-   - 新しい SLO を作成します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-     - `name` (string, required): SLO の名前
-     - `description` (string, optional): SLO の説明
-     - `sli` (object, required): aliasプロパティを持つサービスレベル指標（SLI）の設定
-     - `time_period_days` (integer, required): SLOが評価される期間（日数）
-     - `target_per_million` (integer, required): 100万イベント中、成功すると予想される対象イベントの数
-
-4. `honeycomb_slo_update`
-   - 既存の SLO を更新します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-     - `sloId` (string, required): 更新する SLO の ID
-     - `name` (string, optional): SLO の新しい名前
-     - `description` (string, optional): SLO の新しい説明
-     - `sli` (object, optional): aliasプロパティを持つ新しいサービスレベル指標（SLI）の設定
-     - `time_period_days` (integer, optional): 新しい期間（日数）
-     - `target_per_million` (integer, optional): 新しい100万イベントあたりの目標値
-
-#### トリガー管理
-
-1. `honeycomb_triggers_list`
-
-   - データセットのすべてのトリガーをリスト表示します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-
-2. `honeycomb_trigger_create`
-
-   - 新しいトリガーを作成します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-     - `name` (string, required): トリガーの名前（最大120文字）
-     - `description` (string, optional): トリガーの説明（最大1023文字）
-     - `query_id` (string, queryが提供されない場合は必須): トリガーのクエリID（query_idかqueryのどちらか一方が必須）
-     - `query` (object, query_idが提供されない場合は必須): インラインクエリ仕様（query_idかqueryのどちらか一方が必須）
-     - `threshold` (object, required): しきい値の設定
-       - `op` (string, required): 比較演算子（`>`, `>=`, `<`, `<=`）
-       - `value` (number, required): 比較対象のしきい値
-       - `exceeded_limit` (integer, optional): アラート送信前に条件を満たす必要がある回数（1-5、デフォルト: 1）
-     - `frequency` (integer, optional): 結果をチェックする間隔（秒単位、60-86400、60の倍数であること、デフォルト: 900）
-     - `alert_type` (string, optional): アラート動作（`on_change`: しきい値を超えた時のみ、`on_true`: しきい値を超えている間毎回、デフォルト: `on_change`）
-     - `recipient_ids` (array of strings, optional): トリガー通知の受信者ID配列
-     - `disabled` (boolean, optional): trueの場合、トリガーは評価されません（デフォルト: false）
-     - `evaluation_schedule_type` (string, optional): スケジュールタイプ（`frequency`または`window`）
-     - `evaluation_schedule` (object, optional): タイプが`window`の場合のスケジュール設定
-
-3. `honeycomb_trigger_update`
-
-   - 既存のトリガーを更新します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-     - `triggerId` (string, required): 更新するトリガーの ID
-     - `name` (string, optional): トリガーの新しい名前（最大120文字）
-     - `description` (string, optional): トリガーの新しい説明（最大1023文字）
-     - `query_id` (string, optional): トリガーの新しいクエリID（query_idかqueryのどちらか一方を使用）
-     - `query` (object, optional): 新しいインラインクエリ仕様（queryかquery_idのどちらか一方を使用）
-     - `threshold` (object, optional): 新しいしきい値の設定
-       - `op` (string, optional): 比較演算子（`>`, `>=`, `<`, `<=`）
-       - `value` (number, optional): 比較対象のしきい値
-       - `exceeded_limit` (integer, optional): アラート送信前に条件を満たす必要がある回数（1-5）
-     - `frequency` (integer, optional): 結果をチェックする新しい間隔（秒単位、60-86400、60の倍数であること）
-     - `alert_type` (string, optional): 新しいアラート動作（`on_change`または`on_true`）
-     - `recipient_ids` (array of strings, optional): 新しいトリガー通知の受信者ID配列
-     - `disabled` (boolean, optional): trueの場合、トリガーは評価されません
-     - `evaluation_schedule_type` (string, optional): スケジュールタイプ（`frequency`または`window`）
-     - `evaluation_schedule` (object, optional): タイプが`window`の場合のスケジュール設定
-
-4. `honeycomb_trigger_delete`
-   - トリガーを削除します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-     - `triggerId` (string, required): 削除するトリガーの ID
 
 ## 使用例
 

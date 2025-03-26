@@ -46,10 +46,7 @@ interface EventCreateArgs {
   event: any;
 }
 
-interface BatchEventCreateArgs {
-  datasetSlug: string;
-  events: any[];
-}
+
 
 // P2のエンドポイント用インターフェース
 interface BoardListArgs {}
@@ -71,9 +68,7 @@ interface BoardUpdateArgs {
   query_ids?: string[];
 }
 
-interface BoardDeleteArgs {
-  boardId: string;
-}
+
 
 interface MarkerListArgs {
   datasetSlug: string;
@@ -88,93 +83,31 @@ interface MarkerCreateArgs {
   url?: string;
 }
 
-interface MarkerGetArgs {
-  datasetSlug: string;
-  markerId: string;
-}
 
-interface MarkerUpdateArgs {
-  datasetSlug: string;
-  markerId: string;
-  message?: string;
-  type?: string;
-  start_time?: string;
-  end_time?: string;
-  url?: string;
-}
 
-interface MarkerDeleteArgs {
-  datasetSlug: string;
-  markerId: string;
-}
 
-interface SLOListArgs {
-  datasetSlug: string;
-}
 
-interface SLOCreateArgs {
-  datasetSlug: string;
-  name: string;
-  description?: string;
-  sli: any;  // Required: SLI configuration
-  time_period_days: number;  // Required: Time period in days
-  target_per_million: number;  // Required: Target per million events
-}
 
-interface SLOGetArgs {
-  datasetSlug: string;
-  sloId: string;
-}
 
-interface SLOUpdateArgs {
-  datasetSlug: string;
-  sloId: string;
-  name?: string;
-  description?: string;
-  sli?: any;
-  time_period_days?: number;
-  target_per_million?: number;
-}
 
-interface SLODeleteArgs {
-  datasetSlug: string;
-  sloId: string;
-}
 
-interface TriggerListArgs {
-  datasetSlug: string;
-}
 
-interface TriggerCreateArgs {
-  datasetSlug: string;
-  name: string;
-  description?: string;
-  query_id: string;
-  threshold?: any;
-  frequency?: any;
-  recipient_ids?: string[];
-}
 
-interface TriggerGetArgs {
-  datasetSlug: string;
-  triggerId: string;
-}
 
-interface TriggerUpdateArgs {
-  datasetSlug: string;
-  triggerId: string;
-  name?: string;
-  description?: string;
-  query_id?: string;
-  threshold?: any;
-  frequency?: any;
-  recipient_ids?: string[];
-}
 
-interface TriggerDeleteArgs {
-  datasetSlug: string;
-  triggerId: string;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // P1のツール定義
 const authTool: Tool = {
@@ -320,27 +253,7 @@ const eventCreateTool: Tool = {
   },
 };
 
-const batchEventCreateTool: Tool = {
-  name: "honeycomb_batch_event_create",
-  description: "Create multiple events in a dataset in a single batch",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug to create events in",
-      },
-      events: {
-        type: "array",
-        items: {
-          type: "object",
-        },
-        description: "Array of event data to send",
-      },
-    },
-    required: ["datasetSlug", "events"],
-  },
-};
+
 
 // P2のツール定義
 const boardsListTool: Tool = {
@@ -423,20 +336,7 @@ const boardUpdateTool: Tool = {
   },
 };
 
-const boardDeleteTool: Tool = {
-  name: "honeycomb_board_delete",
-  description: "Delete a board",
-  inputSchema: {
-    type: "object",
-    properties: {
-      boardId: {
-        type: "string",
-        description: "Board ID to delete",
-      },
-    },
-    required: ["boardId"],
-  },
-};
+
 
 const markersListTool: Tool = {
   name: "honeycomb_markers_list",
@@ -488,439 +388,15 @@ const markerCreateTool: Tool = {
   },
 };
 
-const markerGetTool: Tool = {
-  name: "honeycomb_marker_get",
-  description: "Get information about a specific marker",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug the marker belongs to, or 'all'",
-      },
-      markerId: {
-        type: "string",
-        description: "Marker ID to retrieve",
-      },
-    },
-    required: ["datasetSlug", "markerId"],
-  },
-};
 
-const markerUpdateTool: Tool = {
-  name: "honeycomb_marker_update",
-  description: "Update an existing marker",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug the marker belongs to, or 'all'",
-      },
-      markerId: {
-        type: "string",
-        description: "Marker ID to update",
-      },
-      message: {
-        type: "string",
-        description: "New message for the marker",
-      },
-      type: {
-        type: "string",
-        description: "New type for the marker",
-      },
-      start_time: {
-        type: "string",
-        description: "New start time for the marker (ISO format)",
-      },
-      end_time: {
-        type: "string",
-        description: "New end time for the marker (ISO format)",
-      },
-      url: {
-        type: "string",
-        description: "New URL associated with the marker",
-      },
-    },
-    required: ["datasetSlug", "markerId"],
-  },
-};
 
-const markerDeleteTool: Tool = {
-  name: "honeycomb_marker_delete",
-  description: "Delete a marker",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug the marker belongs to, or 'all'",
-      },
-      markerId: {
-        type: "string",
-        description: "Marker ID to delete",
-      },
-    },
-    required: ["datasetSlug", "markerId"],
-  },
-};
 
-const slosListTool: Tool = {
-  name: "honeycomb_slos_list",
-  description: "List all SLOs for a dataset",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug to list SLOs for, or 'all' for all datasets",
-      },
-    },
-    required: ["datasetSlug"],
-  },
-};
 
-const sloCreateTool: Tool = {
-  name: "honeycomb_slo_create",
-  description: "Create a new SLO for a dataset",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug to create SLO for, or 'all' for all datasets",
-      },
-      name: {
-        type: "string",
-        description: "Name of the SLO",
-      },
-      description: {
-        type: "string",
-        description: "Description of the SLO",
-      },
-      sli: {
-        type: "object",
-        description: "Service Level Indicator configuration",
-      },
-      objective: {
-        type: "object",
-        description: "Objective configuration with target and time window",
-      },
-      time_period: {
-        type: "object",
-        description: "Time period configuration for the SLO",
-      },
-    },
-    required: ["datasetSlug", "name"],
-  },
-};
 
-const sloGetTool: Tool = {
-  name: "honeycomb_slo_get",
-  description: "Get information about a specific SLO",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug the SLO belongs to, or 'all'",
-      },
-      sloId: {
-        type: "string",
-        description: "SLO ID to retrieve",
-      },
-    },
-    required: ["datasetSlug", "sloId"],
-  },
-};
 
-const sloUpdateTool: Tool = {
-  name: "honeycomb_slo_update",
-  description: "Update an existing SLO",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug the SLO belongs to, or 'all'",
-      },
-      sloId: {
-        type: "string",
-        description: "SLO ID to update",
-      },
-      name: {
-        type: "string",
-        description: "New name for the SLO",
-      },
-      description: {
-        type: "string",
-        description: "New description for the SLO",
-      },
-      sli: {
-        type: "object",
-        description: "New Service Level Indicator configuration",
-      },
-      objective: {
-        type: "object",
-        description: "New objective configuration",
-      },
-      time_period: {
-        type: "object",
-        description: "New time period configuration",
-      },
-    },
-    required: ["datasetSlug", "sloId"],
-  },
-};
 
-const sloDeleteTool: Tool = {
-  name: "honeycomb_slo_delete",
-  description: "Delete an SLO",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug the SLO belongs to, or 'all'",
-      },
-      sloId: {
-        type: "string",
-        description: "SLO ID to delete",
-      },
-    },
-    required: ["datasetSlug", "sloId"],
-  },
-};
 
-const triggersListTool: Tool = {
-  name: "honeycomb_triggers_list",
-  description: "List all triggers for a dataset",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug to list triggers for",
-      },
-    },
-    required: ["datasetSlug"],
-  },
-};
 
-const triggerCreateTool: Tool = {
-  name: "honeycomb_trigger_create",
-  description: "Create a new trigger for a dataset",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug to create trigger for",
-      },
-      name: {
-        type: "string",
-        description: "Name of the trigger (max 120 chars)",
-      },
-      description: {
-        type: "string",
-        description: "Description of the trigger (max 1023 chars)",
-      },
-      query_id: {
-        type: "string",
-        description: "Query ID to associate with the trigger (use either query_id or query, not both)",
-      },
-      query: {
-        type: "object",
-        description: "Inline query specification (use either query or query_id, not both)",
-      },
-      threshold: {
-        type: "object",
-        properties: {
-          op: {
-            type: "string",
-            enum: [">", ">=", "<", "<="],
-            description: "Comparison operator for the threshold",
-          },
-          value: {
-            type: "number",
-            description: "Numeric threshold value",
-          },
-          exceeded_limit: {
-            type: "integer",
-            description: "Number of times threshold must be met before alerting (1-5)",
-            minimum: 1,
-            maximum: 5,
-          },
-        },
-        required: ["op", "value"],
-        description: "Threshold configuration for the trigger",
-      },
-      frequency: {
-        type: "integer",
-        description: "Interval in seconds to check results (60-86400, must be multiple of 60)",
-        minimum: 60,
-        maximum: 86400,
-      },
-      alert_type: {
-        type: "string",
-        enum: ["on_change", "on_true"],
-        description: "Alert firing behavior: on_change (only when crossing threshold) or on_true (every check while threshold is met)",
-        default: "on_change",
-      },
-      recipient_ids: {
-        type: "array",
-        items: {
-          type: "string",
-        },
-        description: "Recipient IDs to notify when the trigger fires",
-      },
-      disabled: {
-        type: "boolean",
-        description: "If true, the trigger will not be evaluated or send alerts",
-        default: false,
-      },
-      evaluation_schedule_type: {
-        type: "string",
-        enum: ["frequency", "window"],
-        description: "The schedule type: frequency (always run) or window (only run during specific times)",
-      },
-      evaluation_schedule: {
-        type: "object",
-        description: "Schedule configuration when evaluation_schedule_type is 'window'",
-      },
-    },
-    required: ["datasetSlug", "name"],
-    oneOf: [
-      { required: ["query_id"] },
-      { required: ["query"] }
-    ],
-  },
-};
-
-const triggerGetTool: Tool = {
-  name: "honeycomb_trigger_get",
-  description: "Get information about a specific trigger",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug the trigger belongs to",
-      },
-      triggerId: {
-        type: "string",
-        description: "Trigger ID to retrieve",
-      },
-    },
-    required: ["datasetSlug", "triggerId"],
-  },
-};
-
-const triggerUpdateTool: Tool = {
-  name: "honeycomb_trigger_update",
-  description: "Update an existing trigger",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug the trigger belongs to",
-      },
-      triggerId: {
-        type: "string",
-        description: "Trigger ID to update",
-      },
-      name: {
-        type: "string",
-        description: "New name for the trigger (max 120 chars)",
-      },
-      description: {
-        type: "string",
-        description: "New description for the trigger (max 1023 chars)",
-      },
-      query_id: {
-        type: "string",
-        description: "New query ID to associate with the trigger (use either query_id or query, not both)",
-      },
-      query: {
-        type: "object",
-        description: "New inline query specification (use either query or query_id, not both)",
-      },
-      threshold: {
-        type: "object",
-        properties: {
-          op: {
-            type: "string",
-            enum: [">", ">=", "<", "<="],
-            description: "Comparison operator for the threshold",
-          },
-          value: {
-            type: "number",
-            description: "Numeric threshold value",
-          },
-          exceeded_limit: {
-            type: "integer",
-            description: "Number of times threshold must be met before alerting (1-5)",
-            minimum: 1,
-            maximum: 5,
-          },
-        },
-        description: "New threshold configuration",
-      },
-      frequency: {
-        type: "integer",
-        description: "New interval in seconds to check results (60-86400, must be multiple of 60)",
-        minimum: 60,
-        maximum: 86400,
-      },
-      alert_type: {
-        type: "string",
-        enum: ["on_change", "on_true"],
-        description: "New alert firing behavior: on_change (only when crossing threshold) or on_true (every check while threshold is met)",
-      },
-      recipient_ids: {
-        type: "array",
-        items: {
-          type: "string",
-        },
-        description: "New recipient IDs to notify",
-      },
-      disabled: {
-        type: "boolean",
-        description: "If true, the trigger will not be evaluated or send alerts",
-      },
-      evaluation_schedule_type: {
-        type: "string",
-        enum: ["frequency", "window"],
-        description: "The schedule type: frequency (always run) or window (only run during specific times)",
-      },
-      evaluation_schedule: {
-        type: "object",
-        description: "Schedule configuration when evaluation_schedule_type is 'window'",
-      },
-    },
-    required: ["datasetSlug", "triggerId"],
-  },
-};
-
-const triggerDeleteTool: Tool = {
-  name: "honeycomb_trigger_delete",
-  description: "Delete a trigger",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug the trigger belongs to",
-      },
-      triggerId: {
-        type: "string",
-        description: "Trigger ID to delete",
-      },
-    },
-    required: ["datasetSlug", "triggerId"],
-  },
-};
 
 // P2機能用のツールの追加定義
 const datasetsCreateTool: Tool = {
@@ -942,28 +418,7 @@ const datasetsCreateTool: Tool = {
   },
 };
 
-const datasetsUpdateTool: Tool = {
-  name: "honeycomb_datasets_update",
-  description: "Update an existing dataset",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug to update",
-      },
-      name: {
-        type: "string",
-        description: "New name for the dataset",
-      },
-      description: {
-        type: "string",
-        description: "New description for the dataset",
-      },
-    },
-    required: ["datasetSlug"],
-  },
-};
+
 
 class HoneycombClient {
   private baseUrl: string;
@@ -1341,7 +796,7 @@ class HoneycombClient {
     return await response.json();
   }
 
-  async updateMarker(datasetSlug: string, markerId: string, markerData: Partial<MarkerUpdateArgs>): Promise<any> {
+  async updateMarker(datasetSlug: string, markerId: string, markerData: Partial<MarkerCreateArgs>): Promise<any> {
     const endpoint = datasetSlug === 'all' 
       ? `${this.baseUrl}/markers/${markerId}` 
       : `${this.baseUrl}/markers/${markerId}?dataset=${datasetSlug}`;
@@ -1562,16 +1017,7 @@ async function main() {
             };
           }
 
-          case "honeycomb_board_delete": {
-            const args = request.params.arguments as unknown as BoardDeleteArgs;
-            if (!args.boardId) {
-              throw new Error("boardId is required");
-            }
-            await client.deleteBoard(args.boardId);
-            return {
-              content: [{ type: "text", text: JSON.stringify({ success: true }) }],
-            };
-          }
+
 
           // P2 - Marker management
           case "honeycomb_markers_list": {
@@ -1596,169 +1042,11 @@ async function main() {
             };
           }
           
-          case "honeycomb_marker_get": {
-            const args = request.params.arguments as unknown as MarkerGetArgs;
-            if (!args.datasetSlug || !args.markerId) {
-              throw new Error("datasetSlug and markerId are required");
-            }
-            const response = await client.getMarker(args.datasetSlug, args.markerId);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-          
-          case "honeycomb_marker_update": {
-            const args = request.params.arguments as unknown as MarkerUpdateArgs;
-            if (!args.datasetSlug || !args.markerId) {
-              throw new Error("datasetSlug and markerId are required");
-            }
-            const response = await client.updateMarker(args.datasetSlug, args.markerId, args);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-          
-          case "honeycomb_marker_delete": {
-            const args = request.params.arguments as unknown as MarkerDeleteArgs;
-            if (!args.datasetSlug || !args.markerId) {
-              throw new Error("datasetSlug and markerId are required");
-            }
-            await client.deleteMarker(args.datasetSlug, args.markerId);
-            return {
-              content: [{ type: "text", text: JSON.stringify({ success: true }) }],
-            };
-          }
 
-          // P2 - SLO management
-          case "honeycomb_slos_list": {
-            const args = request.params.arguments as unknown as SLOListArgs;
-            if (!args.datasetSlug) {
-              throw new Error("datasetSlug is required");
-            }
-            const response = await client.listSLOs(args.datasetSlug);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
 
-          case "honeycomb_slo_get": {
-            const args = request.params.arguments as unknown as SLOGetArgs;
-            if (!args.sloId) {
-              throw new Error("sloId is required");
-            }
-            const response = await client.getSLO(args.sloId);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
 
-          case "honeycomb_slo_create": {
-            const args = request.params.arguments as unknown as SLOCreateArgs;
-            if (!args.datasetSlug || !args.name || !args.sli || !args.time_period_days || !args.target_per_million) {
-              throw new Error("datasetSlug, name, sli, time_period_days, and target_per_million are required");
-            }
-            const sloData = {
-              name: args.name,
-              description: args.description,
-              sli: args.sli,
-              time_period_days: args.time_period_days,
-              target_per_million: args.target_per_million,
-            };
-            const response = await client.createSLO(args.datasetSlug, sloData);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
 
-          case "honeycomb_slo_update": {
-            const args = request.params.arguments as unknown as SLOUpdateArgs;
-            if (!args.sloId) {
-              throw new Error("sloId is required");
-            }
-            const sloData = {
-              name: args.name,
-              description: args.description,
-              sli: args.sli,
-              time_period_days: args.time_period_days,
-              target_per_million: args.target_per_million,
-            };
-            const response = await client.updateSLO(args.sloId, sloData);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
 
-          // P2 - Trigger management
-          case "honeycomb_triggers_list": {
-            const args = request.params.arguments as unknown as TriggerListArgs;
-            if (!args.datasetSlug) {
-              throw new Error("datasetSlug is required");
-            }
-            const response = await client.listTriggers(args.datasetSlug);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-
-          case "honeycomb_trigger_get": {
-            const args = request.params.arguments as unknown as TriggerGetArgs;
-            if (!args.datasetSlug || !args.triggerId) {
-              throw new Error("datasetSlug and triggerId are required");
-            }
-            const response = await client.getTrigger(args.datasetSlug, args.triggerId);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-
-          case "honeycomb_trigger_create": {
-            const args = request.params.arguments as unknown as TriggerCreateArgs;
-            if (!args.datasetSlug || !args.name || !args.query_id) {
-              throw new Error("datasetSlug, name, and query_id are required");
-            }
-            const triggerData = {
-              name: args.name,
-              description: args.description,
-              query_id: args.query_id,
-              threshold: args.threshold,
-              frequency: args.frequency,
-              recipient_ids: args.recipient_ids,
-            };
-            const response = await client.createTrigger(args.datasetSlug, triggerData);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-
-          case "honeycomb_trigger_update": {
-            const args = request.params.arguments as unknown as TriggerUpdateArgs;
-            if (!args.datasetSlug || !args.triggerId) {
-              throw new Error("datasetSlug and triggerId are required");
-            }
-            const triggerData = {
-              name: args.name,
-              description: args.description,
-              query_id: args.query_id,
-              threshold: args.threshold,
-              frequency: args.frequency,
-              recipient_ids: args.recipient_ids,
-            };
-            const response = await client.updateTrigger(args.datasetSlug, args.triggerId, triggerData);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-
-          case "honeycomb_trigger_delete": {
-            const args = request.params.arguments as unknown as TriggerDeleteArgs;
-            if (!args.datasetSlug || !args.triggerId) {
-              throw new Error("datasetSlug and triggerId are required");
-            }
-            await client.deleteTrigger(args.datasetSlug, args.triggerId);
-            return {
-              content: [{ type: "text", text: JSON.stringify({ success: true }) }],
-            };
-          }
 
           default:
             throw new Error(`Unknown tool: ${request.params.name}`);
@@ -1780,35 +1068,20 @@ async function main() {
         datasetsListTool,
         datasetGetTool,
         datasetsCreateTool,
-        datasetsUpdateTool,
         columnsListTool,
         queryCreateTool,
         queryGetTool,
         queryResultCreateTool,
         queryResultGetTool,
         eventCreateTool,
-        batchEventCreateTool,
         
         // P2 Tools
         boardsListTool,
         boardGetTool,
         boardCreateTool,
         boardUpdateTool,
-        boardDeleteTool,
         markersListTool,
         markerCreateTool,
-        markerGetTool,
-        markerUpdateTool,
-        markerDeleteTool,
-        slosListTool,
-        sloGetTool,
-        sloCreateTool,
-        sloUpdateTool,
-        triggersListTool,
-        triggerGetTool,
-        triggerCreateTool,
-        triggerUpdateTool,
-        triggerDeleteTool,
       ],
     };
   });
