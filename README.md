@@ -89,12 +89,7 @@ This MCP server provides the following tools:
      - `name` (string, required): Name of the dataset
      - `description` (string, optional): Description of the dataset
 
-4. `honeycomb_datasets_update`
-   - Updates an existing dataset
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset to update
-     - `name` (string, optional): New name for the dataset
-     - `description` (string, optional): New description for the dataset
+
 
 #### Column Management
 
@@ -125,11 +120,7 @@ This MCP server provides the following tools:
      - `datasetSlug` (string, required): Slug of the dataset
      - `data` (object, required): Event data
 
-2. `honeycomb_batch_event_create`
-   - Creates multiple events in a dataset
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-     - `events` (array of objects, required): Array of event data
+
 
 
 #### Board Management
@@ -158,10 +149,7 @@ This MCP server provides the following tools:
      - `description` (string, optional): New description for the board
      - `query_ids` (array of strings, optional): New query IDs to include in the board
 
-5. `honeycomb_board_delete`
-   - Deletes a board
-   - Input:
-     - `boardId` (string, required): ID of the board to delete
+
 
 #### Marker Management
 
@@ -170,13 +158,7 @@ This MCP server provides the following tools:
    - Input:
      - `datasetSlug` (string, required): Slug of the dataset
 
-2. `honeycomb_marker_get`
-   - Gets information about a specific marker
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-     - `markerId` (string, required): ID of the marker
-
-3. `honeycomb_marker_create`
+2. `honeycomb_marker_create`
    - Creates a new marker
    - Input:
      - `datasetSlug` (string, required): Slug of the dataset
@@ -185,109 +167,13 @@ This MCP server provides the following tools:
      - `start_time` (string, required): Start time for the marker
      - `end_time` (string, optional): End time for the marker
      - `url` (string, optional): URL associated with the marker
-
-4. `honeycomb_marker_update`
-   - Updates an existing marker
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-     - `markerId` (string, required): ID of the marker to update
-     - `message` (string, optional): New message for the marker
-     - `type` (string, optional): New type for the marker
-     - `start_time` (string, optional): New start time for the marker
-     - `end_time` (string, optional): New end time for the marker
-     - `url` (string, optional): New URL associated with the marker
-
-5. `honeycomb_marker_delete`
-   - Deletes a marker
    - Input:
      - `datasetSlug` (string, required): Slug of the dataset
      - `markerId` (string, required): ID of the marker to delete
 
-#### SLO Management
 
-1. `honeycomb_slos_list`
-   - Lists all SLOs for a dataset
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
 
-2. `honeycomb_slo_get`
-   - Gets information about a specific SLO
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-     - `sloId` (string, required): ID of the SLO
 
-3. `honeycomb_slo_create`
-   - Creates a new SLO
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-     - `name` (string, required): Name of the SLO
-     - `description` (string, optional): Description of the SLO
-     - `sli` (object, required): Service Level Indicator configuration with alias property
-     - `time_period_days` (integer, required): The time period in days over which the SLO will be evaluated
-     - `target_per_million` (integer, required): The number of events out of one million that you expect qualified events to succeed
-
-4. `honeycomb_slo_update`
-   - Updates an existing SLO
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-     - `sloId` (string, required): ID of the SLO to update
-     - `name` (string, optional): New name for the SLO
-     - `description` (string, optional): New description for the SLO
-     - `sli` (object, optional): New Service Level Indicator configuration with alias property
-     - `time_period_days` (integer, optional): New time period in days
-     - `target_per_million` (integer, optional): New target per million events
-
-#### Trigger Management
-
-1. `honeycomb_triggers_list`
-   - Lists all triggers for a dataset
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-
-2. `honeycomb_trigger_create`
-   - Creates a new trigger
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-     - `name` (string, required): Name of the trigger (max 120 chars)
-     - `description` (string, optional): Description of the trigger (max 1023 chars)
-     - `query_id` (string, required if query not provided): Query ID for the trigger
-     - `query` (object, required if query_id not provided): Inline query specification
-     - `threshold` (object, required): Threshold configuration
-       - `op` (string, required): Operator for comparison (`>`, `>=`, `<`, `<=`)
-       - `value` (number, required): Threshold value to compare against
-       - `exceeded_limit` (integer, optional): Number of times threshold must be met before alerting (1-5, default: 1)
-     - `frequency` (integer, optional): Interval in seconds to check results (60-86400, must be multiple of 60, default: 900)
-     - `alert_type` (string, optional): Alert behavior (`on_change`: only when crossing threshold, `on_true`: every check while threshold is met, default: `on_change`)
-     - `recipient_ids` (array of strings, optional): IDs of recipients for trigger notifications
-     - `disabled` (boolean, optional): If true, the trigger will not be evaluated (default: false)
-     - `evaluation_schedule_type` (string, optional): Schedule type (`frequency` or `window`)
-     - `evaluation_schedule` (object, optional): Schedule configuration when type is `window`
-
-3. `honeycomb_trigger_update`
-   - Updates an existing trigger
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-     - `triggerId` (string, required): ID of the trigger to update
-     - `name` (string, optional): New name for the trigger (max 120 chars)
-     - `description` (string, optional): New description for the trigger (max 1023 chars)
-     - `query_id` (string, optional): New query ID for the trigger (use either query_id or query)
-     - `query` (object, optional): New inline query specification (use either query or query_id)
-     - `threshold` (object, optional): New threshold configuration
-       - `op` (string, optional): Operator for comparison (`>`, `>=`, `<`, `<=`)
-       - `value` (number, optional): Threshold value to compare against
-       - `exceeded_limit` (integer, optional): Number of times threshold must be met before alerting (1-5)
-     - `frequency` (integer, optional): New interval in seconds to check results (60-86400, must be multiple of 60)
-     - `alert_type` (string, optional): New alert behavior (`on_change` or `on_true`)
-     - `recipient_ids` (array of strings, optional): New IDs of recipients for trigger notifications
-     - `disabled` (boolean, optional): If true, the trigger will not be evaluated
-     - `evaluation_schedule_type` (string, optional): Schedule type (`frequency` or `window`)
-     - `evaluation_schedule` (object, optional): Schedule configuration when type is `window`
-
-4. `honeycomb_trigger_delete`
-   - Deletes a trigger
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-     - `triggerId` (string, required): ID of the trigger to delete
 
 ## Example Usage
 
