@@ -63,141 +63,113 @@ npm start
 
 この MCP サーバーは以下のツールを提供します：
 
-#### 認証
+### 認証
 
 1. `honeycomb_auth`
-   - Honeycomb API で認証を行います
-   - 入力:
-     - `apiKey` (string, optional): Honeycomb API キー（提供されない場合、環境変数を使用）
+   - Honeycomb API で認証を行い、APIキーを検証します
+   - 入力パラメータは必要ありません（環境変数を使用）
 
-#### データセット管理
+### データセット管理
 
 1. `honeycomb_datasets_list`
-
-   - 利用可能なすべてのデータセットをリスト表示します
+   - Honeycomb環境内の利用可能なすべてのデータセットをリスト表示します
    - 入力パラメータは必要ありません
 
 2. `honeycomb_dataset_get`
-
-   - 特定のデータセットに関する情報を取得します
+   - 特定のデータセットに関する詳細情報を取得します
    - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
+     - `datasetSlug` (string, required): 取得するデータセットのスラグ
 
-3. `honeycomb_datasets_create`
-
-   - 新しいデータセットを作成します
-   - 入力:
-     - `name` (string, required): データセットの名前
-     - `description` (string, optional): データセットの説明
-
-
-
-#### カラム管理
+### カラム管理
 
 1. `honeycomb_columns_list`
-   - データセット内のすべてのカラムをリスト表示します
+   - データセット内のすべてのカラムをオプションのフィルタリングでリスト表示します
    - 入力:
      - `datasetSlug` (string, required): データセットのスラグ
+     - `key_name` (string, optional): 特定のカラム名でフィルタリング
 
-#### クエリ管理
+### クエリ管理
 
 1. `honeycomb_query_create`
-
    - データセットに対する新しいクエリを作成します
    - 入力:
      - `datasetSlug` (string, required): データセットのスラグ
-     - `query` (object, required): クエリ設定
+     - `query` (object, required): 計算、時間範囲、フィルターを含むクエリ設定オブジェクト
 
-2. `honeycomb_query_result_create`
-   - クエリを実行し、結果を返します
+2. `honeycomb_query_get`
+   - 特定のクエリに関する情報を取得します
    - 入力:
      - `datasetSlug` (string, required): データセットのスラグ
-     - `query` (object, required): クエリ設定
+     - `queryId` (string, required): 取得するクエリのID
 
-#### イベント管理
-
-1. `honeycomb_event_create`
-
-   - データセットに新しいイベントを作成します
+3. `honeycomb_query_result_create`
+   - クエリを実行し、結果を返します（クエリの実行）
    - 入力:
      - `datasetSlug` (string, required): データセットのスラグ
-     - `data` (object, required): イベントデータ
+     - `queryId` (string, required): 実行するクエリのID
+     - `disable_series` (boolean, optional): シリーズデータを無効にするかどうか
+     - `disable_total_by_aggregate` (boolean, optional): 合計集計を無効にするかどうか
+     - `disable_other_by_aggregate` (boolean, optional): その他の集計を無効にするかどうか
+     - `limit` (integer, optional): 結果の数の制限
 
+4. `honeycomb_query_result_get`
+   - 以前に実行されたクエリの結果を取得します
+   - 入力:
+     - `datasetSlug` (string, required): データセットのスラグ
+     - `queryResultId` (string, required): 取得するクエリ結果のID
 
+### データセット定義
 
-#### ボード管理
+1. `honeycomb_dataset_definitions_list`
+   - ページネーション対応のデータセット定義リストを取得します
+   - 入力:
+     - `page` (number, optional): ページ番号（1から開始）
+     - `limit` (number, optional): 1ページあたりの結果数（デフォルト: 100, 最大: 1000）
+     - `sort_by` (string, optional): ソートするフィールド（例: 'name', 'description'）
+     - `sort_order` (string, optional): ソート順序（'asc'または'desc'）
+
+### ボード管理
 
 1. `honeycomb_boards_list`
-
-   - すべてのボードをリスト表示します
+   - 利用可能なすべてのボードをリスト表示します
    - 入力パラメータは必要ありません
 
 2. `honeycomb_board_get`
-
-   - 特定のボードに関する情報を取得します
+   - 特定のボードに関する詳細情報を取得します
    - 入力:
-     - `boardId` (string, required): ボードの ID
-
-3. `honeycomb_board_create`
-
-   - 新しいボードを作成します
-   - 入力:
-     - `name` (string, required): ボードの名前
-     - `description` (string, optional): ボードの説明
-     - `query_ids` (array of strings, optional): ボードに含めるクエリのID配列
-
-4. `honeycomb_board_update`
-
-   - 既存のボードを更新します
-   - 入力:
-     - `boardId` (string, required): 更新するボードの ID
-     - `name` (string, optional): ボードの新しい名前
-     - `description` (string, optional): ボードの新しい説明
-     - `query_ids` (array of strings, optional): ボードに含める新しいクエリのID配列
-
-
-
-#### マーカー管理
-
-1. `honeycomb_markers_list`
-
-   - データセットのすべてのマーカーをリスト表示します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-
-2. `honeycomb_marker_create`
-
-   - 新しいマーカーを作成します
-   - 入力:
-     - `datasetSlug` (string, required): データセットのスラグ
-     - `message` (string, required): マーカーのメッセージ
-     - `type` (string, required): マーカーのタイプ
-     - `start_time` (string, required): マーカーの開始時間
-     - `end_time` (string, optional): マーカーの終了時間
-     - `url` (string, optional): マーカーに関連付けられた URL
-
-
-
+     - `boardId` (string, required): 取得するボードのID
 
 
 ## 使用例
 
-以下は、Claude AI がこの MCP サーバーを使用して新しい Honeycomb データセットを作成し、イベントを追加する例です：
+以下は、Claude AIがこのMCPサーバーを使用してデータセットを一覧表示し、クエリを実行する例です：
 
 ```
-[Claude] Honeycombに「アプリケーションモニタリング」という名前の新しいデータセットを作成し、説明として「本番アプリケーションのモニタリング」を設定してください。
+[Claude] Honeycomb環境で利用可能なデータセットを表示していただけますか？
 
-[ユーザー] Honeycombに新しいデータセットを作成するのを手伝います。
+[ユーザー] はい、Honeycombにどのようなデータセットがあるか確認したいです。
 
-[Claude] Honeycombに新しいデータセットを作成します。
+[Claude] Honeycomb環境で利用可能なすべてのデータセットを一覧表示します。
 
-「アプリケーションモニタリング」という名前で、説明「本番アプリケーションのモニタリング」のデータセットを作成しています...
+honeycomb_datasets_listツールを使用します...
 
-[Claude は honeycomb_datasets_create を使用]
+利用可能なデータセットは以下の通りです：
+- production-metrics（スラグ: prod-metrics）
+- staging-services（スラグ: staging-svc）
+- application-logs（スラグ: app-logs）
 
-データセットが正常に作成されました！これでイベントを追加できます。
+どのデータセットについてさらに詳しく調べますか？
 
-テスト用に、このデータセットにサンプルイベントを作成しますか？
+[ユーザー] production-metricsデータセットを見てみましょう。
+
+[Claude] スラグ「prod-metrics」を使用してhoneycomb_dataset_getでproduction-metricsデータセットの詳細を取得します...
+
+次に、過去24時間の平均応答時間を示すクエリを作成して実行します。
+
+honeycomb_query_createとhoneycomb_query_result_createを使用します...
+
+平均応答時間の傾向を示す結果は次のとおりです：
+[クエリ結果の視覚化の説明]
 
 [ユーザー] はい、サンプルイベントを追加してください。
 

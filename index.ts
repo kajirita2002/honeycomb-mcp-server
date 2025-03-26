@@ -9,21 +9,53 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 // Honeycomb APIのインターフェース定義
-interface AuthArgs {}
-
-interface DatasetListArgs {}
-
 interface DatasetGetArgs {
   datasetSlug: string;
 }
 
 interface ColumnListArgs {
   datasetSlug: string;
+  key_name?: string; // オプショナル：特定のカラム名でフィルタリング
+}
+
+// クエリの計算操作の型定義
+interface QueryCalculation {
+  op: string;           // 計算操作（COUNT, AVGなど）
+  column?: string;      // 計算対象の列名（必要な場合）
+}
+
+// クエリの並び順の型定義
+interface QueryOrder {
+  op?: string;          // 並び替えの操作
+  column?: string;      // 並び替えの列
+  order: 'ascending' | 'descending';
+}
+
+// クエリのフィルタの型定義
+interface QueryFilter {
+  column: string;       // フィルタ対象の列
+  op: string;           // フィルタ操作（EXISTS, =, !=など）
+  value?: any;          // フィルタ値
+}
+
+// Honeycomb クエリの型定義
+interface HoneycombQuery {
+  calculations: QueryCalculation[];
+  breakdowns?: string[];            // グループ化する列
+  filters?: QueryFilter[];          // フィルタ条件
+  filter_combination?: 'AND' | 'OR'; // フィルタの組み合わせ方法
+  time_range?: number;              // 秒単位の時間範囲
+  start_time?: number;              // UNIXエポック秒からの開始時間
+  end_time?: number;                // UNIXエポック秒からの終了時間
+  limit?: number;                   // 返される結果の最大数
+  orders?: QueryOrder[];            // 結果の並び順
+  granularity?: number;             // グラフの時間解像度（秒単位）
+  having?: any;                     // 結果テーブルに対するフィルタ
 }
 
 interface QueryCreateArgs {
   datasetSlug: string;
-  query: any;
+  query: HoneycombQuery;
 }
 
 interface QueryGetArgs {
@@ -34,6 +66,10 @@ interface QueryGetArgs {
 interface QueryResultCreateArgs {
   datasetSlug: string;
   queryId: string;
+  disable_series?: boolean;
+  disable_total_by_aggregate?: boolean;
+  disable_other_by_aggregate?: boolean;
+  limit?: number;
 }
 
 interface QueryResultGetArgs {
@@ -41,75 +77,17 @@ interface QueryResultGetArgs {
   queryResultId: string;
 }
 
-interface EventCreateArgs {
-  datasetSlug: string;
-  event: any;
-}
-
-
-
-// P2のエンドポイント用インターフェース
-interface BoardListArgs {}
-
-interface BoardCreateArgs {
-  name: string;
-  description?: string;
-  query_ids?: string[];
+interface DatasetDefinitionsListArgs {
+  page?: number;
+  limit?: number;
+  sort_by?: string;
+  sort_order?: string;
 }
 
 interface BoardGetArgs {
   boardId: string;
 }
 
-interface BoardUpdateArgs {
-  boardId: string;
-  name?: string;
-  description?: string;
-  query_ids?: string[];
-}
-
-
-
-interface MarkerListArgs {
-  datasetSlug: string;
-}
-
-interface MarkerCreateArgs {
-  datasetSlug: string;
-  message: string;
-  type: string;
-  start_time: string;
-  end_time?: string;
-  url?: string;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// P1のツール定義
 const authTool: Tool = {
   name: "honeycomb_auth",
   description: "Get authentication information and validate API key",
@@ -152,6 +130,10 @@ const columnsListTool: Tool = {
       datasetSlug: {
         type: "string",
         description: "Dataset slug to list columns for",
+      },
+      key_name: {
+        type: "string",
+        description: "Optional: Filter by a specific column key name",
       },
     },
     required: ["datasetSlug"],
@@ -234,28 +216,34 @@ const queryResultGetTool: Tool = {
   },
 };
 
-const eventCreateTool: Tool = {
-  name: "honeycomb_event_create",
-  description: "Create a new event in a dataset",
+
+// Dataset Definitionsのツール定義
+const datasetDefinitionsListTool: Tool = {
+  name: "honeycomb_dataset_definitions_list",
+  description: "List dataset definitions with pagination",
   inputSchema: {
     type: "object",
     properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug to create event in",
+      page: {
+        type: "number",
+        description: "ページ番号（1から始まる）",
       },
-      event: {
-        type: "object",
-        description: "Event data to send",
+      limit: {
+        type: "number",
+        description: "1ページあたりの結果数（デフォルト: 100, 最大: 1000）",
+      },
+      sort_by: {
+        type: "string",
+        description: "ソートするフィールド（例: 'name', 'description'）",
+      },
+      sort_order: {
+        type: "string",
+        description: "ソート順序（'asc'または'desc'）",
       },
     },
-    required: ["datasetSlug", "event"],
   },
 };
 
-
-
-// P2のツール定義
 const boardsListTool: Tool = {
   name: "honeycomb_boards_list",
   description: "List all boards",
@@ -265,31 +253,6 @@ const boardsListTool: Tool = {
   },
 };
 
-const boardCreateTool: Tool = {
-  name: "honeycomb_board_create",
-  description: "Create a new board",
-  inputSchema: {
-    type: "object",
-    properties: {
-      name: {
-        type: "string",
-        description: "Name of the board",
-      },
-      description: {
-        type: "string",
-        description: "Description of the board",
-      },
-      query_ids: {
-        type: "array",
-        items: {
-          type: "string",
-        },
-        description: "Query IDs to include in the board",
-      },
-    },
-    required: ["name"],
-  },
-};
 
 const boardGetTool: Tool = {
   name: "honeycomb_board_get",
@@ -306,120 +269,6 @@ const boardGetTool: Tool = {
   },
 };
 
-const boardUpdateTool: Tool = {
-  name: "honeycomb_board_update",
-  description: "Update an existing board",
-  inputSchema: {
-    type: "object",
-    properties: {
-      boardId: {
-        type: "string",
-        description: "Board ID to update",
-      },
-      name: {
-        type: "string",
-        description: "New name for the board",
-      },
-      description: {
-        type: "string",
-        description: "New description for the board",
-      },
-      query_ids: {
-        type: "array",
-        items: {
-          type: "string",
-        },
-        description: "New query IDs to include in the board",
-      },
-    },
-    required: ["boardId"],
-  },
-};
-
-
-
-const markersListTool: Tool = {
-  name: "honeycomb_markers_list",
-  description: "List all markers for a dataset",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug to list markers for, or 'all' for all datasets",
-      },
-    },
-    required: ["datasetSlug"],
-  },
-};
-
-const markerCreateTool: Tool = {
-  name: "honeycomb_marker_create",
-  description: "Create a new marker for a dataset",
-  inputSchema: {
-    type: "object",
-    properties: {
-      datasetSlug: {
-        type: "string",
-        description: "Dataset slug to create marker for, or 'all' for all datasets",
-      },
-      message: {
-        type: "string",
-        description: "Message for the marker",
-      },
-      type: {
-        type: "string",
-        description: "Type of marker",
-      },
-      start_time: {
-        type: "string",
-        description: "Start time for the marker (ISO format)",
-      },
-      end_time: {
-        type: "string",
-        description: "End time for the marker (ISO format), optional for point-in-time markers",
-      },
-      url: {
-        type: "string",
-        description: "URL associated with the marker",
-      },
-    },
-    required: ["datasetSlug", "message", "type", "start_time"],
-  },
-};
-
-
-
-
-
-
-
-
-
-
-
-// P2機能用のツールの追加定義
-const datasetsCreateTool: Tool = {
-  name: "honeycomb_datasets_create",
-  description: "Create a new dataset",
-  inputSchema: {
-    type: "object",
-    properties: {
-      name: {
-        type: "string",
-        description: "Name of the dataset",
-      },
-      description: {
-        type: "string",
-        description: "Description of the dataset",
-      },
-    },
-    required: ["name"],
-  },
-};
-
-
-
 class HoneycombClient {
   private baseUrl: string;
   private headers: Record<string, string>;
@@ -432,6 +281,52 @@ class HoneycombClient {
     };
   }
 
+  // Auth
+  async auth(): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/auth`, {
+      method: "GET",
+      headers: this.headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to authenticate: ${response.statusText}`);
+    }
+
+    return await response.json();
+  }
+
+  // Dataset Definitions operations
+  async listDatasetDefinitions(options?: DatasetDefinitionsListArgs): Promise<any> {
+    let url = `${this.baseUrl}/dataset_definitions`;
+    
+    // クエリパラメータを構築
+    if (options) {
+      const params = new URLSearchParams();
+      if (options.page) params.append('page', options.page.toString());
+      if (options.limit) params.append('limit', options.limit.toString());
+      if (options.sort_by) params.append('sort_by', options.sort_by);
+      if (options.sort_order) params.append('sort_order', options.sort_order);
+      
+      const queryString = params.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+    }
+    
+    const response = await fetch(url, {
+      method: "GET",
+      headers: this.headers,
+    });
+    
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Dataset Definitions list error: Status=${response.status}, Body=${errorBody}`);
+      throw new Error(`データセット定義の取得に失敗しました: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  }
+  
   // Dataset operations
   async listDatasets(): Promise<any> {
     const response = await fetch(`${this.baseUrl}/datasets`, {
@@ -459,43 +354,16 @@ class HoneycombClient {
     return await response.json();
   }
 
-  async createDataset(name: string, description?: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/datasets`, {
-      method: "POST",
-      headers: this.headers,
-      body: JSON.stringify({
-        name,
-        description,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to create dataset: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async updateDataset(slug: string, name?: string, description?: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/datasets/${slug}`, {
-      method: "PUT",
-      headers: this.headers,
-      body: JSON.stringify({
-        name,
-        description,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to update dataset: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
   // Column operations
-  async listColumns(datasetSlug: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/datasets/${datasetSlug}/columns`, {
+  async listColumns(datasetSlug: string, keyName?: string): Promise<any> {
+    let url = `${this.baseUrl}/1/columns/${datasetSlug}`;
+    
+    // key_nameパラメータが指定されている場合、URLクエリに追加
+    if (keyName) {
+      url += `?key_name=${encodeURIComponent(keyName)}`;
+    }
+    
+    const response = await fetch(url, {
       method: "GET",
       headers: this.headers,
     });
@@ -509,27 +377,76 @@ class HoneycombClient {
 
   // Query operations
   async createQuerySpec(datasetSlug: string, querySpec: any): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/datasets/${datasetSlug}/queries`, {
+    const response = await fetch(`${this.baseUrl}/queries/${datasetSlug}`, {
       method: "POST",
       headers: this.headers,
       body: JSON.stringify(querySpec),
     });
 
     if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(
+        `Query creation error: Status=${response.status}, Body=${errorBody}`
+      );
       throw new Error(`Failed to create query spec: ${response.statusText}`);
     }
 
     return await response.json();
   }
 
-  async getQueryResult(datasetSlug: string, queryId: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/datasets/${datasetSlug}/queries/${queryId}/results`, {
+  async getQuerySpec(datasetSlug: string, queryId: string): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/queries/${datasetSlug}/${queryId}`, {
       method: "GET",
       headers: this.headers,
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to get query results: ${response.statusText}`);
+      throw new Error(`Failed to get query spec: ${response.statusText}`);
+    }
+
+    return await response.json();
+  }
+
+  async createQueryResult(datasetSlug: string, queryId: string, options?: {
+    disable_series?: boolean;
+    disable_total_by_aggregate?: boolean;
+    disable_other_by_aggregate?: boolean;
+    limit?: number;
+  }): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/1/query_results/${datasetSlug}`, {
+      method: "POST",
+      headers: this.headers,
+      body: JSON.stringify({
+        query_id: queryId,
+        disable_series: options?.disable_series ?? false,
+        disable_total_by_aggregate: options?.disable_total_by_aggregate ?? true,
+        disable_other_by_aggregate: options?.disable_other_by_aggregate ?? true,
+        limit: options?.limit ?? 10000
+      }),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Query result creation error: Status=${response.status}, Body=${errorBody}`);
+      throw new Error(`Failed to create query result: ${response.statusText}`);
+    }
+
+    return await response.json();
+  }
+
+  async getQueryResult(datasetSlug: string, queryResultId: string): Promise<any> {
+    const response = await fetch(
+      `${this.baseUrl}/query_results/${datasetSlug}/${queryResultId}`,
+      {
+        method: "GET",
+        headers: this.headers,
+      }
+    );
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Query result error: Status=${response.status}, Body=${errorBody}`);
+      throw new Error(`クエリ結果の取得に失敗しました: ${response.statusText}`);
     }
 
     return await response.json();
@@ -561,279 +478,6 @@ class HoneycombClient {
 
     return await response.json();
   }
-
-  async createBoard(name: string, description?: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/boards`, {
-      method: "POST",
-      headers: this.headers,
-      body: JSON.stringify({
-        name,
-        description,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to create board: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async updateBoard(boardId: string, name?: string, description?: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/boards/${boardId}`, {
-      method: "PUT",
-      headers: this.headers,
-      body: JSON.stringify({
-        name,
-        description,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to update board: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async deleteBoard(boardId: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/boards/${boardId}`, {
-      method: "DELETE",
-      headers: this.headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to delete board: ${response.statusText}`);
-    }
-  }
-
-  // SLO operations
-  async listSLOs(datasetSlug: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/slos?dataset=${datasetSlug}`, {
-      method: "GET",
-      headers: this.headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to list SLOs: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async getSLO(sloId: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/slos/${sloId}`, {
-      method: "GET",
-      headers: this.headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to get SLO: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async createSLO(datasetSlug: string, sloData: any): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/slos`, {
-      method: "POST",
-      headers: this.headers,
-      body: JSON.stringify({
-        ...sloData,
-        dataset: datasetSlug,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to create SLO: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async updateSLO(sloId: string, sloData: any): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/slos/${sloId}`, {
-      method: "PUT",
-      headers: this.headers,
-      body: JSON.stringify(sloData),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to update SLO: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  // Trigger operations
-  async listTriggers(datasetSlug: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/triggers?dataset=${datasetSlug}`, {
-      method: "GET",
-      headers: this.headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to list triggers: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async getTrigger(datasetSlug: string, triggerId: string): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/triggers/${triggerId}?dataset=${datasetSlug}`, {
-      method: "GET",
-      headers: this.headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to get trigger: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async createTrigger(datasetSlug: string, triggerData: any): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/triggers`, {
-      method: "POST",
-      headers: this.headers,
-      body: JSON.stringify({
-        ...triggerData,
-        dataset: datasetSlug,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to create trigger: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async updateTrigger(datasetSlug: string, triggerId: string, triggerData: any): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/triggers/${triggerId}`, {
-      method: "PUT",
-      headers: this.headers,
-      body: JSON.stringify({
-        ...triggerData,
-        dataset: datasetSlug,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to update trigger: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async deleteTrigger(datasetSlug: string, triggerId: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/triggers/${triggerId}?dataset=${datasetSlug}`, {
-      method: "DELETE",
-      headers: this.headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to delete trigger: ${response.statusText}`);
-    }
-  }
-
-  // Marker operations
-  async listMarkers(datasetSlug: string): Promise<any> {
-    const endpoint = datasetSlug === 'all' 
-      ? `${this.baseUrl}/markers` 
-      : `${this.baseUrl}/markers?dataset=${datasetSlug}`;
-      
-    const response = await fetch(endpoint, {
-      method: "GET",
-      headers: this.headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to list markers: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async getMarker(datasetSlug: string, markerId: string): Promise<any> {
-    const endpoint = datasetSlug === 'all' 
-      ? `${this.baseUrl}/markers/${markerId}` 
-      : `${this.baseUrl}/markers/${markerId}?dataset=${datasetSlug}`;
-      
-    const response = await fetch(endpoint, {
-      method: "GET",
-      headers: this.headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to get marker: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async createMarker(markerData: MarkerCreateArgs): Promise<any> {
-    const endpoint = markerData.datasetSlug === 'all' 
-      ? `${this.baseUrl}/markers` 
-      : `${this.baseUrl}/markers?dataset=${markerData.datasetSlug}`;
-      
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: this.headers,
-      body: JSON.stringify({
-        message: markerData.message,
-        type: markerData.type,
-        start_time: markerData.start_time,
-        end_time: markerData.end_time,
-        url: markerData.url
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to create marker: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async updateMarker(datasetSlug: string, markerId: string, markerData: Partial<MarkerCreateArgs>): Promise<any> {
-    const endpoint = datasetSlug === 'all' 
-      ? `${this.baseUrl}/markers/${markerId}` 
-      : `${this.baseUrl}/markers/${markerId}?dataset=${datasetSlug}`;
-      
-    const response = await fetch(endpoint, {
-      method: "PUT",
-      headers: this.headers,
-      body: JSON.stringify({
-        message: markerData.message,
-        type: markerData.type,
-        start_time: markerData.start_time,
-        end_time: markerData.end_time,
-        url: markerData.url
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to update marker: ${response.statusText}`);
-    }
-
-    return await response.json();
-  }
-
-  async deleteMarker(datasetSlug: string, markerId: string): Promise<void> {
-    const endpoint = datasetSlug === 'all' 
-      ? `${this.baseUrl}/markers/${markerId}` 
-      : `${this.baseUrl}/markers/${markerId}?dataset=${datasetSlug}`;
-      
-    const response = await fetch(endpoint, {
-      method: "DELETE",
-      headers: this.headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to delete marker: ${response.statusText}`);
-    }
-  }
 }
 
 async function main() {
@@ -853,7 +497,7 @@ async function main() {
       capabilities: {
         tools: {},
       },
-    },
+    }
   );
 
   const client = new HoneycombClient(apiKey);
@@ -863,16 +507,12 @@ async function main() {
     async (request: CallToolRequest) => {
       console.error("CallToolRequest received:", request);
       try {
-        if (!request.params.arguments) {
-          throw new Error("No arguments provided");
-        }
-
         switch (request.params.name) {
           // Auth
           case "honeycomb_auth": {
-            // 認証情報の確認のみ
+            const response = await client.auth();
             return {
-              content: [{ type: "text", text: JSON.stringify({ authenticated: true }) }],
+              content: [{ type: "text", text: JSON.stringify(response) }],
             };
           }
 
@@ -895,35 +535,13 @@ async function main() {
             };
           }
 
-          case "honeycomb_datasets_create": {
-            const args = request.params.arguments as unknown as any;
-            if (!args.name) {
-              throw new Error("name is required");
-            }
-            const response = await client.createDataset(args.name, args.description);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-
-          case "honeycomb_datasets_update": {
-            const args = request.params.arguments as unknown as any;
-            if (!args.datasetSlug) {
-              throw new Error("datasetSlug is required");
-            }
-            const response = await client.updateDataset(args.datasetSlug, args.name, args.description);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-
           // Column management
           case "honeycomb_columns_list": {
             const args = request.params.arguments as unknown as ColumnListArgs;
             if (!args.datasetSlug) {
               throw new Error("datasetSlug is required");
             }
-            const response = await client.listColumns(args.datasetSlug);
+            const response = await client.listColumns(args.datasetSlug, args.key_name);
             return {
               content: [{ type: "text", text: JSON.stringify(response) }],
             };
@@ -935,48 +553,75 @@ async function main() {
             if (!args.datasetSlug || !args.query) {
               throw new Error("datasetSlug and query are required");
             }
-            const response = await client.createQuerySpec(args.datasetSlug, args.query);
+            const response = await client.createQuerySpec(
+              args.datasetSlug,
+              args.query
+            );
+            return {
+              content: [{ type: "text", text: JSON.stringify(response) }],
+            };
+          }
+
+          case "honeycomb_query_get": {
+            const args = request.params.arguments as unknown as QueryGetArgs;
+            if (!args.datasetSlug || !args.queryId) {
+              throw new Error("datasetSlug and queryId are required");
+            }
+            const response = await client.getQuerySpec(
+              args.datasetSlug,
+              args.queryId
+            );
             return {
               content: [{ type: "text", text: JSON.stringify(response) }],
             };
           }
 
           case "honeycomb_query_result_create": {
-            const args = request.params.arguments as unknown as QueryResultCreateArgs;
+            const args = request.params
+              .arguments as unknown as QueryResultCreateArgs;
             if (!args.datasetSlug || !args.queryId) {
               throw new Error("datasetSlug and queryId are required");
             }
-            const response = await client.getQueryResult(args.datasetSlug, args.queryId);
+            const response = await client.createQueryResult(
+              args.datasetSlug,
+              args.queryId,
+              {
+                disable_series: args.disable_series,
+                disable_total_by_aggregate: args.disable_total_by_aggregate,
+                disable_other_by_aggregate: args.disable_other_by_aggregate,
+                limit: args.limit
+              }
+            );
             return {
               content: [{ type: "text", text: JSON.stringify(response) }],
             };
           }
 
           case "honeycomb_query_result_get": {
-            const args = request.params.arguments as unknown as QueryResultGetArgs;
+            const args = request.params
+              .arguments as unknown as QueryResultGetArgs;
             if (!args.datasetSlug || !args.queryResultId) {
-              throw new Error("datasetSlug and queryResultId are required");
+              throw new Error("datasetSlugとqueryResultIdが必要です");
             }
-            const response = await client.getQueryResult(args.datasetSlug, args.queryResultId);
+            const response = await client.getQueryResult(
+              args.datasetSlug,
+              args.queryResultId
+            );
             return {
               content: [{ type: "text", text: JSON.stringify(response) }],
             };
           }
 
-          // Event management
-          case "honeycomb_event_create": {
-            const args = request.params.arguments as unknown as EventCreateArgs;
-            if (!args.datasetSlug || !args.event) {
-              throw new Error("datasetSlug and event are required");
-            }
-            // イベント送信メソッドの実装が必要
-            // const response = await client.createEvent(args.datasetSlug, args.event);
+          // Dataset Definitions
+          case "honeycomb_dataset_definitions_list": {
+            const args = request.params.arguments as unknown as DatasetDefinitionsListArgs;
+            const response = await client.listDatasetDefinitions(args);
             return {
-              content: [{ type: "text", text: JSON.stringify({ success: true }) }],
+              content: [{ type: "text", text: JSON.stringify(response) }],
             };
           }
 
-          // P2 - Board management
+          // - Board management
           case "honeycomb_boards_list": {
             const response = await client.listBoards();
             return {
@@ -995,66 +640,15 @@ async function main() {
             };
           }
 
-          case "honeycomb_board_create": {
-            const args = request.params.arguments as unknown as BoardCreateArgs;
-            if (!args.name) {
-              throw new Error("name is required");
-            }
-            const response = await client.createBoard(args.name, args.description);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-
-          case "honeycomb_board_update": {
-            const args = request.params.arguments as unknown as BoardUpdateArgs;
-            if (!args.boardId) {
-              throw new Error("boardId is required");
-            }
-            const response = await client.updateBoard(args.boardId, args.name, args.description);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-
-
-
-          // P2 - Marker management
-          case "honeycomb_markers_list": {
-            const args = request.params.arguments as unknown as MarkerListArgs;
-            if (!args.datasetSlug) {
-              throw new Error("datasetSlug is required");
-            }
-            const response = await client.listMarkers(args.datasetSlug);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-
-          case "honeycomb_marker_create": {
-            const args = request.params.arguments as unknown as MarkerCreateArgs;
-            if (!args.datasetSlug || !args.message || !args.type || !args.start_time) {
-              throw new Error("datasetSlug, message, type, and start_time are required");
-            }
-            const response = await client.createMarker(args);
-            return {
-              content: [{ type: "text", text: JSON.stringify(response) }],
-            };
-          }
-          
-
-
-
-
-
-
           default:
             throw new Error(`Unknown tool: ${request.params.name}`);
         }
       } catch (error: any) {
         console.error("Error handling request:", error);
         return {
-          content: [{ type: "text", text: JSON.stringify({ error: error.message }) }],
+          content: [
+            { type: "text", text: JSON.stringify({ error: error.message }) },
+          ],
         };
       }
     }
@@ -1063,25 +657,17 @@ async function main() {
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
       tools: [
-        // P1 Tools
         authTool,
         datasetsListTool,
         datasetGetTool,
-        datasetsCreateTool,
         columnsListTool,
         queryCreateTool,
         queryGetTool,
         queryResultCreateTool,
         queryResultGetTool,
-        eventCreateTool,
-        
-        // P2 Tools
+        datasetDefinitionsListTool,
         boardsListTool,
         boardGetTool,
-        boardCreateTool,
-        boardUpdateTool,
-        markersListTool,
-        markerCreateTool,
       ],
     };
   });
