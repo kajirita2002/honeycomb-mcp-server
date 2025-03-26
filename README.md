@@ -68,137 +68,110 @@ This MCP server provides the following tools:
 ### Authentication
 
 1. `honeycomb_auth`
-   - Authenticates with the Honeycomb API
-   - Input:
-     - `apiKey` (string, optional): Honeycomb API key (if not provided, uses environment variable)
+   - Authenticates with the Honeycomb API and validates your API key
+   - No input parameters required (uses environment variable)
 
-#### Dataset Management
+### Dataset Management
 
 1. `honeycomb_datasets_list`
-   - Lists all available datasets
+   - Lists all available datasets in your Honeycomb environment
    - No input parameters required
 
 2. `honeycomb_dataset_get`
-   - Gets information about a specific dataset
+   - Gets detailed information about a specific dataset
    - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
+     - `datasetSlug` (string, required): Slug of the dataset to retrieve
 
-3. `honeycomb_datasets_create`
-   - Creates a new dataset
-   - Input:
-     - `name` (string, required): Name of the dataset
-     - `description` (string, optional): Description of the dataset
-
-
-
-#### Column Management
+### Column Management
 
 1. `honeycomb_columns_list`
-   - Lists all columns in a dataset
+   - Lists all columns in a dataset with optional filtering
    - Input:
      - `datasetSlug` (string, required): Slug of the dataset
+     - `key_name` (string, optional): Filter by a specific column key name
 
-#### Query Management
+### Query Management
 
 1. `honeycomb_query_create`
    - Creates a new query for a dataset
    - Input:
      - `datasetSlug` (string, required): Slug of the dataset
-     - `query` (object, required): Query configuration
+     - `query` (object, required): Query configuration object with calculation, time range, and filters
 
-2. `honeycomb_query_result_create`
-   - Executes a query and returns the results
+2. `honeycomb_query_get`
+   - Gets information about a specific query
    - Input:
      - `datasetSlug` (string, required): Slug of the dataset
-     - `query` (object, required): Query configuration
+     - `queryId` (string, required): ID of the query to retrieve
 
-#### Event Management
-
-1. `honeycomb_event_create`
-   - Creates a new event in a dataset
+3. `honeycomb_query_result_create`
+   - Executes a query and returns the results (runs a query)
    - Input:
      - `datasetSlug` (string, required): Slug of the dataset
-     - `data` (object, required): Event data
+     - `queryId` (string, required): ID of the query to run
+     - `disable_series` (boolean, optional): Whether to disable series data
+     - `disable_total_by_aggregate` (boolean, optional): Whether to disable total aggregates
+     - `disable_other_by_aggregate` (boolean, optional): Whether to disable other aggregates
+     - `limit` (integer, optional): Limit on the number of results
 
+4. `honeycomb_query_result_get`
+   - Gets the results of a previously executed query
+   - Input:
+     - `datasetSlug` (string, required): Slug of the dataset
+     - `queryResultId` (string, required): ID of the query result to retrieve
 
+### Dataset Definitions
 
+1. `honeycomb_dataset_definitions_list`
+   - Lists dataset definitions with pagination support
+   - Input:
+     - `page` (number, optional): Page number (starting from 1)
+     - `limit` (number, optional): Number of results per page (default: 100, max: 1000)
+     - `sort_by` (string, optional): Field to sort by (e.g. 'name', 'description')
+     - `sort_order` (string, optional): Sort order ('asc' or 'desc')
 
-#### Board Management
+### Board Management
 
 1. `honeycomb_boards_list`
-   - Lists all boards
+   - Lists all available boards
    - No input parameters required
 
 2. `honeycomb_board_get`
-   - Gets information about a specific board
+   - Gets detailed information about a specific board
    - Input:
-     - `boardId` (string, required): ID of the board
-
-3. `honeycomb_board_create`
-   - Creates a new board
-   - Input:
-     - `name` (string, required): Name of the board
-     - `description` (string, optional): Description of the board
-     - `query_ids` (array of strings, optional): Query IDs to include in the board
-
-4. `honeycomb_board_update`
-   - Updates an existing board
-   - Input:
-     - `boardId` (string, required): ID of the board to update
-     - `name` (string, optional): New name for the board
-     - `description` (string, optional): New description for the board
-     - `query_ids` (array of strings, optional): New query IDs to include in the board
-
-
-
-#### Marker Management
-
-1. `honeycomb_markers_list`
-   - Lists all markers for a dataset
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-
-2. `honeycomb_marker_create`
-   - Creates a new marker
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-     - `message` (string, required): Message for the marker
-     - `type` (string, required): Type of the marker
-     - `start_time` (string, required): Start time for the marker
-     - `end_time` (string, optional): End time for the marker
-     - `url` (string, optional): URL associated with the marker
-   - Input:
-     - `datasetSlug` (string, required): Slug of the dataset
-     - `markerId` (string, required): ID of the marker to delete
-
-
-
+     - `boardId` (string, required): ID of the board to retrieve
 
 
 ## Example Usage
 
-Here's an example of Claude using this MCP server to create a new Honeycomb dataset and add an event:
+Here's an example of Claude using this MCP server to list datasets and run a query:
 
 ```
-[Claude] Please create a new dataset in Honeycomb called "Application Monitoring" with a description "Monitoring for our production application".
+[Claude] Can you show me the available datasets in our Honeycomb environment?
 
-[User] I'll help you create a new dataset in Honeycomb.
+[User] Sure, I'd like to see what datasets we have in Honeycomb.
 
-[Claude] I'll create a new dataset for you in Honeycomb. 
+[Claude] I'll list all the available datasets in your Honeycomb environment.
 
-I'll use the honeycomb_datasets_create tool:
+I'll use the honeycomb_datasets_list tool...
 
-Input:
-{
-  "name": "Application Monitoring",
-  "description": "Monitoring for our production application"
-}
+Here are your available datasets:
+- production-metrics (slug: prod-metrics)
+- staging-services (slug: staging-svc)
+- application-logs (slug: app-logs)
 
-The dataset has been created successfully!
+Which dataset would you like to explore further?
 
-[Claude] Now, let me add an event to this dataset. I'll create an event with some sample metrics.
+[User] Let's look at the production-metrics dataset.
 
-I'll use the honeycomb_event_create tool:
+[Claude] I'll get details about the production-metrics dataset using honeycomb_dataset_get with the slug "prod-metrics"...
+
+Now I'll create and run a query to show the average response time over the last 24 hours.
+
+I'll use honeycomb_query_create and then honeycomb_query_result_create...
+
+Here are the results showing the average response time trend:
+[Query results visualization description]
 
 Input:
 {
