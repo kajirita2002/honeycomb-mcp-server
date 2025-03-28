@@ -153,6 +153,115 @@ const queryCreateTool: Tool = {
       query: {
         type: "object",
         description: "Query object with calculation, time range, and filters",
+        properties: {
+          calculations: {
+            type: "array",
+            description: "Array of calculation objects that define metrics to compute",
+            items: {
+              type: "object",
+              properties: {
+                op: {
+                  type: "string",
+                  description: "Operation to perform: COUNT, SUM, AVG, P50, P90, P95, P99, MAX, MIN, RATE, RATE_MAX, RATE_AVG, HEATMAP, CONCURRENCY, FREQUENCY, HISTOGRAM, PERCENTILES"
+                },
+                column: {
+                  type: "string",
+                  description: "Column name to perform operation on (not required for COUNT)"
+                }
+              }
+            }
+          },
+          filters: {
+            type: "array",
+            description: "Array of filter objects that define query constraints",
+            items: {
+              type: "object",
+              properties: {
+                column: {
+                  type: "string",
+                  description: "Column name to filter on"
+                },
+                op: {
+                  type: "string",
+                  description: "Operator: exists, does-not-exist, =, !=, >, <, >=, <=, starts-with, ends-with, contains, does-not-contain, in, not-in"
+                },
+                value: {
+                  type: ["string", "number", "boolean", "array"],
+                  description: "Value to compare against (required for operators other than exists/does-not-exist)"
+                }
+              }
+            }
+          },
+          breakdowns: {
+            type: "array",
+            description: "Array of column names to group results by",
+            items: {
+              type: "string"
+            }
+          },
+          orders: {
+            type: "array",
+            description: "Array of order objects to sort results",
+            items: {
+              type: "object",
+              properties: {
+                column: {
+                  type: "string",
+                  description: "Column name to sort by (not required when sorting by COUNT)"
+                },
+                op: {
+                  type: "string",
+                  description: "Operation to sort by: COUNT, SUM, AVG, P50, P90, P95, P99, MAX, MIN, RATE, RATE_MAX, RATE_AVG"
+                },
+                order: {
+                  type: "string",
+                  description: "Sort order (asc, desc, ascending, descending)"
+                }
+              }
+            }
+          },
+          time_range: {
+            type: "number",
+            description: "Time range in seconds or ISO8601 timestamp for absolute time"
+          },
+          start_time: {
+            type: "string",
+            description: "Start time in ISO8601 format (alternative to time_range)"
+          },
+          end_time: {
+            type: "string",
+            description: "End time in ISO8601 format (alternative to time_range)"
+          },
+          granularity: {
+            type: "number",
+            description: "Time bucket size in seconds for time series queries"
+          },
+          limit: {
+            type: "number",
+            description: "Maximum number of results to return"
+          },
+          havings: {
+            type: "array",
+            description: "Array of having objects for filtering on aggregate values",
+            items: {
+              type: "object",
+              properties: {
+                column: {
+                  type: "string",
+                  description: "Column name for the having clause"
+                },
+                op: {
+                  type: "string",
+                  description: "Operation for the having clause: =, !=, >, <, >=, <="
+                },
+                value: {
+                  type: ["string", "number"],
+                  description: "Value to compare against"
+                }
+              }
+            }
+          }
+        }
       },
     },
     required: ["datasetSlug", "query"],
@@ -356,7 +465,7 @@ class HoneycombClient {
 
   // Column operations
   async listColumns(datasetSlug: string, keyName?: string): Promise<any> {
-    let url = `${this.baseUrl}/1/columns/${datasetSlug}`;
+    let url = `${this.baseUrl}/columns/${datasetSlug}`;
     
     // key_nameパラメータが指定されている場合、URLクエリに追加
     if (keyName) {
