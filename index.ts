@@ -90,7 +90,7 @@ interface BoardGetArgs {
 
 const authTool: Tool = {
   name: "honeycomb_auth",
-  description: "Get authentication information and validate API key",
+  description: "API Keys have various scopes permissions and belong to a specific Team or Environment. Use this to validate authentication for a key, to determine what authorizations have been granted to a key, and to determine the Team and Environment that a key belongs to.",
   inputSchema: {
     type: "object",
     properties: {},
@@ -99,7 +99,7 @@ const authTool: Tool = {
 
 const datasetsListTool: Tool = {
   name: "honeycomb_datasets_list",
-  description: "List all datasets in the environment",
+  description: "List all datasets in the environment. A Dataset represents a collection of related events that come from the same source, or are related to the same source.",
   inputSchema: {
     type: "object",
     properties: {},
@@ -108,13 +108,13 @@ const datasetsListTool: Tool = {
 
 const datasetGetTool: Tool = {
   name: "honeycomb_dataset_get",
-  description: "Get information about a specific dataset",
+  description: "Get information about a specific dataset. A Dataset represents a collection of related events that come from the same source, or are related to the same source.",
   inputSchema: {
     type: "object",
     properties: {
       datasetSlug: {
         type: "string",
-        description: "Dataset slug to retrieve",
+        description: "The dataset slug.",
       },
     },
     required: ["datasetSlug"],
@@ -123,17 +123,17 @@ const datasetGetTool: Tool = {
 
 const columnsListTool: Tool = {
   name: "honeycomb_columns_list",
-  description: "List all columns in a dataset",
+  description: "List all columns in a dataset. Columns are fields in the events you send to Honeycomb.",
   inputSchema: {
     type: "object",
     properties: {
       datasetSlug: {
         type: "string",
-        description: "Dataset slug to list columns for",
+        description: "The dataset slug.",
       },
       key_name: {
         type: "string",
-        description: "Optional: Filter by a specific column key name",
+        description: "Optional: Filter columns by a specific name.",
       },
     },
     required: ["datasetSlug"],
@@ -142,38 +142,38 @@ const columnsListTool: Tool = {
 
 const queryCreateTool: Tool = {
   name: "honeycomb_query_create",
-  description: "Create a new query for a dataset",
+  description: "Create a query from a specification. DOES NOT run the query to retrieve results.",
   inputSchema: {
     type: "object",
     properties: {
       datasetSlug: {
         type: "string",
-        description: "Dataset slug to create query for",
+        description: "The dataset slug or use `__all__` for endpoints that support environment-wide operations.",
       },
       query: {
         type: "object",
-        description: "Query object with calculation, time range, and filters",
+        description: "Query specification object that defines what data to retrieve and how to process it",
         properties: {
           calculations: {
             type: "array",
-            description: "Array of calculation objects that define metrics to compute",
+            description: "The calculations to return as a time series and summary table",
             items: {
               type: "object",
               properties: {
                 op: {
                   type: "string",
-                  description: "Operation to perform: COUNT, SUM, AVG, P50, P90, P95, P99, MAX, MIN, RATE, RATE_MAX, RATE_AVG, HEATMAP, CONCURRENCY, FREQUENCY, HISTOGRAM, PERCENTILES"
+                  description: "Operation to perform (e.g., COUNT, SUM, AVG, P50, P90, P95, P99, MAX, MIN, RATE, RATE_MAX, RATE_AVG, HEATMAP, CONCURRENCY, FREQUENCY, HISTOGRAM, PERCENTILES)"
                 },
                 column: {
                   type: "string",
-                  description: "Column name to perform operation on (not required for COUNT)"
+                  description: "The name of the column to perform the operation on"
                 }
               }
             }
           },
           filters: {
             type: "array",
-            description: "Array of filter objects that define query constraints",
+            description: "The filters with which to restrict the considered events",
             items: {
               type: "object",
               properties: {
@@ -194,14 +194,14 @@ const queryCreateTool: Tool = {
           },
           breakdowns: {
             type: "array",
-            description: "Array of column names to group results by",
+            description: "The columns by which to break events down into groups",
             items: {
               type: "string"
             }
           },
           orders: {
             type: "array",
-            description: "Array of order objects to sort results",
+            description: "The terms on which to order the query results. Each term must appear in either the breakdowns field or the calculations field.",
             items: {
               type: "object",
               properties: {
@@ -222,41 +222,41 @@ const queryCreateTool: Tool = {
           },
           time_range: {
             type: "number",
-            description: "Time range in seconds or ISO8601 timestamp for absolute time"
+            description: "Relative time range in seconds from the present"
           },
           start_time: {
-            type: "string",
-            description: "Start time in ISO8601 format (alternative to time_range)"
+            type: "integer",
+            description: "Absolute start time of query, in seconds since UNIX epoch. Must be <= end_time."
           },
           end_time: {
-            type: "string",
-            description: "End time in ISO8601 format (alternative to time_range)"
+            type: "integer",
+            description: "Absolute end time of query, in seconds since UNIX epoch."
           },
           granularity: {
             type: "number",
-            description: "Time bucket size in seconds for time series queries"
+            description: "The time resolution of the query's graph, in seconds. Given a query time range T, valid values (T/1000...T/10)."
           },
           limit: {
             type: "number",
-            description: "Maximum number of results to return"
+            description: "The maximum number of unique groups returned in 'results'. Aggregating many unique groups across a large time range is computationally expensive. Normal maximum: 1,000. For 'disable_series' queries: up to 10,000."
           },
           havings: {
             type: "array",
-            description: "Array of having objects for filtering on aggregate values",
+            description: "The Having clause allows you to filter on the results table. This operation is distinct from filters, which filter the underlying events.",
             items: {
               type: "object",
               properties: {
                 column: {
                   type: "string",
-                  description: "Column name for the having clause"
+                  description: "The name of the column to filter against"
                 },
                 op: {
                   type: "string",
-                  description: "Operation for the having clause: =, !=, >, <, >=, <="
+                  description: "Comparison operator for the having clause (e.g., =, !=, >, <, >=, <=)"
                 },
                 value: {
                   type: ["string", "number"],
-                  description: "Value to compare against"
+                  description: "The value to filter against"
                 }
               }
             }
@@ -270,17 +270,17 @@ const queryCreateTool: Tool = {
 
 const queryGetTool: Tool = {
   name: "honeycomb_query_get",
-  description: "Get information about a specific query",
+  description: "Get information about a specific query. Returns the query specification, not the query results.",
   inputSchema: {
     type: "object",
     properties: {
       datasetSlug: {
         type: "string",
-        description: "Dataset slug the query belongs to",
+        description: "The dataset slug or use `__all__` for endpoints that support environment-wide operations.",
       },
       queryId: {
         type: "string",
-        description: "Query ID to retrieve",
+        description: "The unique identifier (ID) of the query.",
       },
     },
     required: ["datasetSlug", "queryId"],
@@ -289,17 +289,33 @@ const queryGetTool: Tool = {
 
 const queryResultCreateTool: Tool = {
   name: "honeycomb_query_result_create",
-  description: "Create a new query result (run a query)",
+  description: "Run a previously created query and return a query result ID that can be used to retrieve the results.",
   inputSchema: {
     type: "object",
     properties: {
       datasetSlug: {
         type: "string",
-        description: "Dataset slug to create query result for",
+        description: "The dataset slug or use `__all__` for endpoints that support environment-wide operations.",
       },
       queryId: {
         type: "string",
-        description: "Query ID to run",
+        description: "The unique identifier (ID) of the query to run.",
+      },
+      disable_series: {
+        type: "boolean",
+        description: "Whether to disable series in the query result",
+      },
+      disable_total_by_aggregate: {
+        type: "boolean",
+        description: "Whether to disable total by aggregate in the query result",
+      },
+      disable_other_by_aggregate: {
+        type: "boolean",
+        description: "Whether to disable other by aggregate in the query result",
+      },
+      limit: {
+        type: "integer",
+        description: "Maximum number of results to return",
       },
     },
     required: ["datasetSlug", "queryId"],
@@ -308,17 +324,17 @@ const queryResultCreateTool: Tool = {
 
 const queryResultGetTool: Tool = {
   name: "honeycomb_query_result_get",
-  description: "Get results of a specific query execution",
+  description: "Get query results for a previously executed query. The response body will be a JSON object with 'complete': true and the results populated once the query is complete.",
   inputSchema: {
     type: "object",
     properties: {
       datasetSlug: {
         type: "string",
-        description: "Dataset slug the query result belongs to",
+        description: "The dataset slug or use `__all__` for endpoints that support environment-wide operations.",
       },
       queryResultId: {
         type: "string",
-        description: "Query result ID to retrieve",
+        description: "The unique identifier (ID) of the query result.",
       },
     },
     required: ["datasetSlug", "queryResultId"],
@@ -329,25 +345,25 @@ const queryResultGetTool: Tool = {
 // Dataset Definitionsのツール定義
 const datasetDefinitionsListTool: Tool = {
   name: "honeycomb_dataset_definitions_list",
-  description: "List dataset definitions with pagination",
+  description: "List dataset definitions with pagination. Dataset definitions describe the fields with special meaning in the Dataset. Honeycomb automatically creates these Dataset definition fields when the Dataset is created.",
   inputSchema: {
     type: "object",
     properties: {
       page: {
         type: "number",
-        description: "ページ番号（1から始まる）",
+        description: "Page number (starting from 1)",
       },
       limit: {
         type: "number",
-        description: "1ページあたりの結果数（デフォルト: 100, 最大: 1000）",
+        description: "Number of results per page (default: 100, max: 1000)",
       },
       sort_by: {
         type: "string",
-        description: "ソートするフィールド（例: 'name', 'description'）",
+        description: "Field to sort by (e.g., 'name', 'description')",
       },
       sort_order: {
         type: "string",
-        description: "ソート順序（'asc'または'desc'）",
+        description: "Sort order ('asc' or 'desc')",
       },
     },
   },
@@ -355,7 +371,7 @@ const datasetDefinitionsListTool: Tool = {
 
 const boardsListTool: Tool = {
   name: "honeycomb_boards_list",
-  description: "List all boards",
+  description: "List all boards. Boards are a place to pin and save useful queries and graphs you want to retain for later reuse and reference.",
   inputSchema: {
     type: "object",
     properties: {},
@@ -365,13 +381,13 @@ const boardsListTool: Tool = {
 
 const boardGetTool: Tool = {
   name: "honeycomb_board_get",
-  description: "Get information about a specific board",
+  description: "Get information about a specific board. Boards are a place to pin and save useful queries and graphs you want to retain for later reuse and reference.",
   inputSchema: {
     type: "object",
     properties: {
       boardId: {
         type: "string",
-        description: "Board ID to retrieve",
+        description: "The unique identifier (ID) of a Board.",
       },
     },
     required: ["boardId"],
@@ -555,7 +571,7 @@ class HoneycombClient {
     if (!response.ok) {
       const errorBody = await response.text();
       console.error(`Query result error: Status=${response.status}, Body=${errorBody}`);
-      throw new Error(`クエリ結果の取得に失敗しました: ${response.statusText}`);
+      throw new Error(`Failed to get query result: ${response.statusText}`);
     }
 
     return await response.json();
