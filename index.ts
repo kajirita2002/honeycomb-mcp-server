@@ -538,7 +538,7 @@ class HoneycombClient {
     disable_other_by_aggregate?: boolean;
     limit?: number;
   }): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/1/query_results/${datasetSlug}`, {
+    const response = await fetch(`${this.baseUrl}/query_results/${datasetSlug}`, {
       method: "POST",
       headers: this.headers,
       body: JSON.stringify({
